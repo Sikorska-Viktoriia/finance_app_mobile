@@ -1,0 +1,1336 @@
+#:kivy 2.3.1
+#:import dp kivy.metrics.dp
+#:import Window kivy.core.window.Window
+#:import Platform kivy.utils.platform
+#:import WhiteButton utils.widgets.WhiteButton
+
+# --- КОНСТАНТИ (БЕЗ ЗМІН) ---
+#:set PRIMARY_PINK [0.95, 0.3, 0.5, 1]
+#:set LIGHT_PINK [1, 0.95, 0.95, 1]
+#:set PRIMARY_BLUE [0.2, 0.7, 0.9, 1]
+#:set LIGHT_BLUE [0.92, 0.98, 1.0, 1]
+#:set SUCCESS_GREEN [0.2, 0.8, 0.3, 1]
+#:set ERROR_RED [0.9, 0.2, 0.2, 1]
+#:set SELECTED_ITEM_COLOR [0.85, 0.95, 1.0, 1]
+#:set WHITE [1, 1, 1, 1]
+#:set DARK_TEXT [0.1, 0.1, 0.1, 1]
+#:set LIGHT_GRAY [0.9, 0.9, 0.9, 1]
+#:set DARK_GRAY [0.4, 0.4, 0.4, 1]
+
+# --- АДАПТИВНІ ЗМІННІ (ОПТИМІЗОВАНО) ---
+#:set is_mobile True if Platform in ['android', 'ios'] else False
+#:set screen_width Window.width
+#:set is_small_screen screen_width < 400
+#:set is_tablet screen_width >= 600
+
+# Оптимальне масштабування: 0.85 для маленьких телефонів, 1.0 для звичайних/планшетів
+#:set scale_factor 1.0 if is_tablet else (0.85 if is_small_screen else 1.0)
+#:set text_scale 1.0 if is_tablet else (0.85 if is_small_screen else 1.0)
+#:set padding_scale 1.0 if is_tablet else (0.8 if is_small_screen else 1.0)
+
+#:set adaptive_dp lambda x: dp(x * scale_factor)
+#:set adaptive_font lambda x: dp(x * text_scale)
+#:set adaptive_padding lambda x: dp(x * padding_scale)
+
+
+# --- СТИЛІЗОВАНІ КЛАСИ (АДАПТОВАНО) ---
+
+<GradientBox@BoxLayout>:
+    color1: 0.9, 0.95, 1.0, 1
+    canvas.before:
+        Color:
+            rgba: self.color1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [adaptive_dp(15),]
+
+<StyledButton@Button>:
+    background_normal: ''
+    background_down: ''
+    background_color: PRIMARY_BLUE
+    color: WHITE
+    font_size: adaptive_font(18)
+    size_hint_y: None
+    height: adaptive_dp(55) # Адаптивна висота
+    bold: True
+    canvas.before:
+        Color:
+            rgba: self.background_color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [adaptive_dp(10),]
+
+<AppLogo@RelativeLayout>:
+    size_hint_y: None
+    height: adaptive_dp(150) if not is_small_screen else adaptive_dp(120)
+    Image:
+        source: "flamingo.png"
+        size_hint: None, None
+        size: adaptive_dp(130), adaptive_dp(130) if not is_small_screen else (adaptive_dp(100), adaptive_dp(100))
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+<LoginFormLogo@RelativeLayout>:
+    size_hint_y: None
+    height: adaptive_dp(100) if not is_small_screen else adaptive_dp(80)
+    Image:
+        source: "flamingo.png"
+        size_hint: None, None
+        size: adaptive_dp(100), adaptive_dp(100) if not is_small_screen else (adaptive_dp(70), adaptive_dp(70))
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+<StyledTextInput@TextInput>:
+    multiline: False
+    padding: [adaptive_dp(15), adaptive_dp(17)]
+    background_color: 1, 1, 1, 0
+    background_normal: ''
+    background_active: ''
+    foreground_color: DARK_TEXT
+    font_size: adaptive_font(18)
+    size_hint_y: None
+    height: adaptive_dp(55) if not is_small_screen else adaptive_dp(45) # Адаптивна висота
+    cursor_color: PRIMARY_BLUE
+    canvas.before:
+        Color:
+            rgba: WHITE
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [adaptive_dp(10),]
+        Color:
+            rgba: DARK_GRAY
+        Line:
+            rounded_rectangle: [self.x, self.y, self.width, self.height, adaptive_dp(10)]
+            width: 1
+
+<PasswordTextInput>:
+    size_hint_y: None
+    height: adaptive_dp(55) if not is_small_screen else adaptive_dp(45) # Адаптивна висота
+    
+    RelativeLayout:
+        size_hint: 1, 1
+        
+        TextInput:
+            id: password_input
+            text: root.text
+            hint_text: root.hint_text
+            password: root.password 
+            multiline: False
+            
+            padding: [adaptive_dp(15), (self.height - self.line_height) / 2, adaptive_dp(55), (self.height - self.line_height) / 2]
+            
+            background_color: 1, 1, 1, 0
+            background_normal: ''
+            background_active: ''
+            foreground_color: DARK_TEXT
+            font_size: adaptive_font(18)
+            size_hint: 1, 1
+            cursor_color: PRIMARY_PINK
+            canvas.before:
+                Color:
+                    rgba: WHITE
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [adaptive_dp(10),]
+                Color:
+                    rgba: DARK_GRAY
+                Line:
+                    rounded_rectangle: [self.x, self.y, self.width, self.height, adaptive_dp(10)]
+                    width: 1
+            
+        Button:
+            size_hint: None, None
+            size: adaptive_dp(45), adaptive_dp(45) if not is_small_screen else (adaptive_dp(35), adaptive_dp(35))
+            pos_hint: {'right': 0.98, 'center_y': 0.5}
+            background_color: 0, 0, 0, 0
+            background_normal: ''
+            on_press: root.toggle_password() 
+            
+            Image:
+                source: "assets/icons/eye_closed.png" if root.password else "assets/icons/eye_open.png"
+                size_hint: None, None
+                size: adaptive_dp(28), adaptive_dp(28) if not is_small_screen else (adaptive_dp(22), adaptive_dp(22))
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                center: self.parent.center_x, self.parent.center_y
+
+# --- МОДАЛЬНІ ДІАЛОГИ (АДАПТОВАНО) ---
+
+<PasswordChangeDialog@ModalView>:
+    size_hint: (0.9, 0.7) # Оптимізовано для мобільних
+    auto_dismiss: False
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: adaptive_padding(20)
+        spacing: adaptive_dp(15)
+        canvas.before:
+            Color:
+                rgba: WHITE
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [adaptive_dp(20),]
+            Color:
+                rgba: DARK_GRAY
+            Line:
+                rounded_rectangle: [self.x, self.y, self.width, self.height, adaptive_dp(20)]
+                width: 1.2
+        
+        Label:
+            text: 'Зміна паролю'
+            font_size: adaptive_font(20)
+            bold: True
+            color: PRIMARY_PINK
+            size_hint_y: None
+            height: adaptive_dp(40)
+        
+        PasswordTextInput:
+            id: current_password
+            hint_text: 'Поточний пароль'
+        
+        PasswordTextInput:
+            id: new_password
+            hint_text: 'Новий пароль'
+        
+        PasswordTextInput:
+            id: confirm_password
+            hint_text: 'Підтвердіть новий пароль'
+        
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: adaptive_dp(10)
+            size_hint_y: None
+            height: adaptive_dp(50)
+            
+            StyledButton:
+                text: 'Скасувати'
+                background_color: LIGHT_GRAY
+                color: DARK_TEXT
+                on_press: root.dismiss()
+            
+            StyledButton:
+                text: 'Зберегти'
+                background_color: PRIMARY_PINK
+                on_press: app.root.get_screen('dashboard_screen').ids.tab_manager.get_screen('account').save_new_password()
+
+<DeleteAccountDialog@ModalView>:
+    size_hint: (0.85, 0.45) # Оптимізовано для мобільних
+    auto_dismiss: False
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: adaptive_padding(20)
+        spacing: adaptive_dp(15)
+        canvas.before:
+            Color:
+                rgba: WHITE
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [adaptive_dp(20),]
+            Color:
+                rgba: DARK_GRAY
+            Line:
+                rounded_rectangle: [self.x, self.y, self.width, self.height, adaptive_dp(20)]
+                width: 1.2
+        
+        Label:
+            text: 'Видалення акаунту'
+            font_size: adaptive_font(20)
+            bold: True
+            color: ERROR_RED
+            size_hint_y: None
+            height: adaptive_dp(40)
+        
+        Label:
+            text: 'Ця дія незворотна! Ви впевнені, що хочете видалити свій акаунт і всі дані?'
+            font_size: adaptive_font(14)
+            color: DARK_TEXT
+            text_size: self.width, None
+            halign: 'center'
+            valign: 'middle'
+            size_hint_y: None
+            height: adaptive_dp(50)
+        
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: adaptive_dp(10)
+            size_hint_y: None
+            height: adaptive_dp(50)
+            
+            StyledButton:
+                text: 'Скасувати'
+                background_color: LIGHT_GRAY
+                color: DARK_TEXT
+                on_press: root.dismiss()
+            
+            StyledButton:
+                text: 'Видалити'
+                background_color: ERROR_RED
+                on_press: app.root.get_screen('dashboard_screen').ids.tab_manager.get_screen('account').confirm_delete_account()
+
+<SettingItem@BoxLayout>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: adaptive_dp(50) 
+    padding: [adaptive_padding(10), 0]
+    
+    Label:
+        text: root.setting_name
+        font_size: adaptive_font(16)
+        color: DARK_TEXT
+        size_hint_x: 0.7
+        text_size: self.width, None
+        halign: 'left'
+        valign: 'middle'
+    
+    BoxLayout:
+        size_hint_x: 0.3
+
+# --- ПЛАНИ ЗАОЩАДЖЕНЬ (АДАПТОВАНО) ---
+
+<SavingsPlanItem>:
+    plan_id: 0
+    plan_name: ""
+    current_amount: 0.0
+    target_amount: 0.0
+    progress: 0
+    days_left: 0
+    is_selected: False
+    
+    size_hint_y: None
+    height: adaptive_dp(90)
+    padding: adaptive_padding(10)
+    
+    canvas.before:
+        Color:
+            rgba: [0.85, 0.95, 1.0, 1] if root.is_selected else LIGHT_PINK
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [adaptive_dp(15),]
+        Color:
+            rgba: PRIMARY_PINK if root.is_selected else DARK_GRAY
+        Line:
+            rounded_rectangle: [self.x, self.y, self.width, self.height, adaptive_dp(15)]
+            width: 2.5 if root.is_selected else 1
+            
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: adaptive_dp(8)
+        
+        Image:
+            source: "assets/icons/piggy_bank.png"
+            size_hint: None, None
+            size: adaptive_dp(40), adaptive_dp(40)
+            pos_hint: {'center_y': 0.5}
+        
+        BoxLayout:
+            orientation: 'vertical'
+            padding: adaptive_padding(2)
+            spacing: adaptive_dp(2)
+            
+            # --- РЯДОК 1: НАЗВА + ЦІЛЬОВА СУМА ---
+            BoxLayout:
+                size_hint_y: None
+                height: adaptive_dp(25)
+                
+                Label: # 1. Назва плану
+                    text: root.plan_name
+                    font_size: adaptive_font(16)
+                    color: PRIMARY_PINK
+                    halign: 'left'
+                    text_size: self.size
+                    size_hint_x: 0.7 # Даємо більше місця назві
+                    bold: True
+                    
+                Label: # 2. Цільова сума 
+                    text: f"Ціль: ${root.target_amount:.0f}"
+                    font_size: adaptive_font(14)
+                    color: PRIMARY_BLUE
+                    halign: 'right'
+                    text_size: self.size
+                    size_hint_x: 0.3 # Зменшуємо частку
+                    bold: True
+                    
+            # --- РЯДОК 2: ПОТОЧНА СУМА + ПРОГРЕС-БАР ---
+            BoxLayout:
+                size_hint_y: None
+                height: adaptive_dp(25)
+                spacing: adaptive_dp(5)
+                
+                Label: # 1. ЗІБРАНО (КРИТИЧНО) - ЗМІНА КОЛЬОРУ
+                    text: f"Зібр.: ${root.current_amount:.0f}"
+                    font_size: adaptive_font(14) # Збільшуємо шрифт, щоб краще читалося
+                    color: PRIMARY_BLUE # <--- ВИПРАВЛЕННЯ: Колір як у цілі
+                    size_hint_x: 0.35 # Зменшуємо частку
+                    halign: 'left'
+                    text_size: self.size
+                    bold: True
+                
+                ProgressBar: # 2. Прогрес-бар - ЗБІЛЬШЕННЯ ШИРИНИ
+                    value: root.progress
+                    max: 100
+                    size_hint_x: 0.45 # <--- ВИПРАВЛЕННЯ: Збільшуємо частку для візуалізації
+                    background_color: LIGHT_GRAY
+                    foreground_color: PRIMARY_BLUE
+                    
+                Label: # 3. Відсоток і Дні (Стиснено)
+                    text: f"{root.progress:.0f}% / {root.days_left} дн."
+                    font_size: adaptive_font(10)
+                    color: PRIMARY_PINK if root.days_left > 30 else ERROR_RED
+                    size_hint_x: 0.2 # Зменшуємо частку
+                    halign: 'right'
+                    text_size: self.size
+                    bold: True
+
+# --- ОСНОВНІ ЕКРАНИ (АДАПТОВАНО) ---
+
+<StartScreen>:
+    name: 'start_screen'
+    canvas.before:
+        Color:
+            rgba: PRIMARY_BLUE
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    GradientBox:
+        color1: 0.9, 0.95, 1.0, 0
+        orientation: 'vertical'
+        padding: adaptive_padding(40)
+        spacing: adaptive_dp(30)
+        
+        AppLogo:
+            height: adaptive_dp(150) if not is_small_screen else adaptive_dp(120)
+
+        Label:
+            text: "Flamingo Cash"
+            font_size: adaptive_font(48) if not is_small_screen else adaptive_font(36)
+            bold: True
+            color: WHITE
+            size_hint_y: None
+            height: adaptive_dp(60) if not is_small_screen else adaptive_dp(45)
+
+        Label:
+            text: "Your modern financial assistant"
+            font_size: adaptive_font(18) if not is_small_screen else adaptive_font(16)
+            color: 1, 1, 1, 0.8
+            size_hint_y: None
+            height: adaptive_dp(25)
+
+        Widget: # Розширювач
+
+        StyledButton:
+            text: "Увійти"
+            background_color: PRIMARY_PINK
+            color: WHITE
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = "login_screen"
+
+        StyledButton:
+            text: "Зареєструватися"
+            background_color: WHITE
+            color: PRIMARY_PINK
+            on_press:
+                root.manager.transition.direction = 'left'
+                root.manager.current = "registration_screen"
+
+<RegistrationScreen>:
+    name: "registration_screen"
+    canvas.before:
+        Color:
+            rgba: LIGHT_BLUE
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    GradientBox:
+        color1: 1.0, 0.98, 0.98, 0
+        orientation: "vertical"
+        padding: adaptive_padding(30)
+        spacing: adaptive_dp(20)
+        
+        LoginFormLogo:
+            height: adaptive_dp(100) if not is_small_screen else adaptive_dp(80)
+
+        Label:
+            text: "Створити обліковий запис"
+            font_size: adaptive_font(30) if not is_small_screen else adaptive_font(24)
+            bold: True
+            color: PRIMARY_PINK
+            size_hint_y: None
+            height: adaptive_dp(40)
+
+        BoxLayout:
+            orientation: "vertical"
+            spacing: adaptive_dp(15)
+            size_hint_y: None
+            height: adaptive_dp(275) if not is_small_screen else adaptive_dp(220) 
+
+            StyledTextInput:
+                id: username
+                hint_text: "Ім'я користувача"
+            
+            StyledTextInput:
+                id: email
+                hint_text: "Електронна пошта"
+                
+            PasswordTextInput:
+                id: password_field
+                hint_text: "Пароль"
+
+            PasswordTextInput:
+                id: password_confirm_field
+                hint_text: "Підтвердіть пароль"
+
+        StyledButton:
+            text: "Зареєструватися"
+            background_color: PRIMARY_PINK
+            color: WHITE
+            size_hint_y: None
+            height: adaptive_dp(60) if not is_small_screen else adaptive_dp(50)
+            on_press: root.register_user()
+
+        Label:
+            id: reg_message
+            text: ""
+            color: ERROR_RED
+            size_hint_y: None
+            height: adaptive_dp(30)
+
+        BoxLayout:
+            size_hint_y: None
+            height: adaptive_dp(40)
+            Label:
+                text: "Вже маєте обліковий запис?"
+                color: DARK_TEXT
+                font_size: adaptive_font(14)
+            StyledButton:
+                text: "Увійти"
+                background_color: 0.8, 0.8, 0.8, 0
+                color: PRIMARY_BLUE
+                font_size: adaptive_font(16)
+                bold: True
+                size_hint_x: 0.5
+                size_hint_y: None
+                height: adaptive_dp(40)
+                on_press: root.manager.current = 'login_screen'
+
+<LoginScreen>:
+    name: "login_screen"
+    canvas.before:
+        Color:
+            rgba: LIGHT_BLUE
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    GradientBox:
+        color1: 0.9, 0.95, 1.0, 0
+        orientation: "vertical"
+        padding: adaptive_padding(30)
+        spacing: adaptive_dp(25)
+
+        LoginFormLogo:
+            height: adaptive_dp(120) if not is_small_screen else adaptive_dp(90)
+
+        Label:
+            text: "Вхід до системи"
+            font_size: adaptive_font(34) if not is_small_screen else adaptive_font(28)
+            bold: True
+            color: PRIMARY_PINK
+            size_hint_y: None
+            height: adaptive_dp(50)
+            
+        BoxLayout:
+            orientation: "vertical"
+            spacing: adaptive_dp(15)
+            size_hint_y: None
+            height: adaptive_dp(125) if not is_small_screen else adaptive_dp(100)
+
+            StyledTextInput:
+                id: email
+                hint_text: "Електронна пошта"
+
+            PasswordTextInput:
+                id: password_field
+                hint_text: "Пароль"
+
+        StyledButton:
+            text: "Увійти"
+            background_color: PRIMARY_BLUE
+            color: WHITE
+            size_hint_y: None
+            height: adaptive_dp(60) if not is_small_screen else adaptive_dp(50)
+            on_press: root.login_user()
+
+        Label:
+            id: login_message
+            text: ""
+            color: ERROR_RED
+            size_hint_y: None
+            height: adaptive_dp(30)
+
+        Widget: # Розширювач, щоб притиснути нижній блок
+
+        BoxLayout:
+            size_hint_y: None
+            height: adaptive_dp(40)
+            Label:
+                text: "Ще не маєте облікового запису?"
+                color: DARK_TEXT
+                font_size: adaptive_font(14)
+            StyledButton:
+                text: "Зареєструватися"
+                background_color: 0.8, 0.8, 0.8, 0
+                color: PRIMARY_PINK
+                font_size: adaptive_font(16)
+                bold: True
+                size_hint_x: 0.5
+                size_hint_y: None
+                height: adaptive_dp(40)
+                on_press: root.manager.current = 'registration_screen'
+
+<HomeTab>:
+    name: "home_tab"
+    canvas.before:
+        Color:
+            rgba: LIGHT_BLUE
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            
+    BoxLayout:
+        orientation: "vertical"
+        padding: adaptive_padding(6)
+        spacing: adaptive_dp(5)
+        
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: None
+            height: adaptive_dp(60)
+            spacing: adaptive_dp(3)
+            
+            Label:
+                id: welcome_label
+                text: "Ласкаво просимо!"
+                font_size: adaptive_font(16)
+                bold: True
+                color: PRIMARY_PINK
+                size_hint_y: None
+                height: adaptive_dp(25)
+                text_size: self.width, None
+                halign: 'center'
+            
+            Label:
+                id: balance_label
+                text: "Загальний баланс: 0.00 $"
+                font_size: adaptive_font(14)
+                color: PRIMARY_BLUE
+                size_hint_y: None
+                height: adaptive_dp(25)
+                text_size: self.width, None
+                halign: 'center'
+        
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: adaptive_dp(35)
+            spacing: adaptive_dp(3)
+            
+            Label:
+                text: "Фільтр банку:"
+                font_size: adaptive_font(12)
+                color: PRIMARY_BLUE
+                size_hint_x: 0.35 
+                text_size: self.width, self.height 
+                halign: 'left'
+                valign: 'middle'
+            
+            Spinner:
+                id: bank_spinner
+                text: "Всі банки"
+                values: ["Всі банки"]
+                size_hint_x: 0.65 
+                background_color: PRIMARY_BLUE
+                color: WHITE
+                background_normal: ''
+                background_down: ''
+                font_size: adaptive_font(12)
+                
+                canvas.after:
+                    Clear
+                canvas.before:
+                    Color:
+                        rgba: PRIMARY_BLUE
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [adaptive_dp(5),] 
+                on_text: root.change_bank_filter(self.text)
+        
+        # Контейнер для каруселі карток
+        BoxLayout:
+            id: cards_container
+            size_hint_y: 0.48 # Збільшено частку для кращої видимості карток
+            padding: [adaptive_padding(5), 0]
+            canvas.before:
+                Color:
+                    rgba: [0.95, 0.95, 0.95, 1]
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [adaptive_dp(8),] 
+
+        # Історія транзакцій
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.52 # Зменшено, щоб звільнити місце для карток
+            padding: [adaptive_padding(6), adaptive_padding(6), adaptive_padding(6), adaptive_padding(6)]
+            spacing: adaptive_dp(3)
+            canvas.before:
+                Color:
+                    rgba: LIGHT_PINK
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [adaptive_dp(8),] 
+            
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: adaptive_dp(25)
+                
+                Label:
+                    text: "Останні транзакції"
+                    font_size: adaptive_font(14) 
+                    bold: True
+                    color: PRIMARY_PINK
+                    text_size: self.width, self.height 
+                    halign: 'left'
+                
+                Label:
+                    id: transactions_count
+                    text: ""
+                    font_size: adaptive_font(10)
+                    color: PRIMARY_BLUE
+                    text_size: self.width, self.height 
+                    halign: 'right'
+            
+            ScrollView:
+                size_hint_y: 1
+                do_scroll_x: False
+                bar_width: adaptive_dp(5)
+                bar_color: PRIMARY_BLUE
+                bar_inactive_color: DARK_GRAY
+                
+                BoxLayout:
+                    id: history_container
+                    orientation: 'vertical'
+                    spacing: adaptive_dp(2) 
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: [adaptive_padding(3), adaptive_padding(2), adaptive_padding(3), adaptive_padding(2)]
+                    size_hint_x: 1
+<AnalyticsTab>:
+    name: "analytics_tab"
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: adaptive_padding(15)
+        spacing: adaptive_dp(15)
+
+        Label:
+            text: 'Аналітика витрат'
+            font_size: adaptive_font(24)
+            bold: True
+            color: root.primary_pink
+            size_hint_y: None
+            height: adaptive_dp(40)
+
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            scroll_type: ['bars', 'content']
+            bar_width: adaptive_dp(8)
+            bar_color: root.primary_blue
+            
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: adaptive_dp(20)
+                size_hint_y: None
+                height: self.minimum_height
+                padding: [0, 0, adaptive_padding(5), 0]
+
+                # Створення конверту
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: adaptive_dp(120) 
+                    spacing: adaptive_dp(5)
+                    padding: [0, 0, 0, adaptive_padding(5)]
+
+                    Label:
+                        text: 'Створити новий конверт'
+                        font_size: adaptive_font(18)
+                        bold: True
+                        color: root.dark_text
+                        size_hint_y: None
+                        height: adaptive_dp(25)
+
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: adaptive_dp(40)
+                        spacing: adaptive_dp(8)
+
+                        TextInput:
+                            id: envelope_name_input
+                            hint_text: 'Назва конверту'
+                            size_hint_x: 0.5
+                            font_size: adaptive_font(14)
+                            padding: [adaptive_padding(10), adaptive_padding(8)]
+                            background_color: root.white
+                            foreground_color: root.dark_text
+
+                        TextInput:
+                            id: envelope_budget_input
+                            hint_text: 'Бюджет ($)'
+                            size_hint_x: 0.3
+                            input_filter: 'float'
+                            font_size: adaptive_font(14)
+                            padding: [adaptive_padding(10), adaptive_padding(8)]
+                            background_color: root.white
+                            foreground_color: root.dark_text
+
+                        WhiteButton:
+                            text: 'Створити'
+                            size_hint_x: 0.2
+                            background_color: root.primary_pink
+                            color: root.white
+                            font_size: adaptive_font(12)
+                            bold: True
+                            on_press: root.create_envelope()
+
+                    Label:
+                        id: analytics_message
+                        text: ''
+                        font_size: adaptive_font(12)
+                        size_hint_y: None
+                        height: adaptive_dp(20)
+
+                # Мої конверти
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: adaptive_dp(10)
+
+                    Label:
+                        text: 'Мої конверти'
+                        font_size: adaptive_font(18)
+                        bold: True
+                        color: root.dark_text
+                        size_hint_y: None
+                        height: adaptive_dp(25)
+
+                    GridLayout:
+                        id: envelopes_container
+                        cols: 3
+                        spacing: adaptive_dp(10)
+                        size_hint_y: None
+                        height: self.minimum_height
+
+                # Статистика
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: adaptive_dp(10)
+
+                    Label:
+                        text: 'Статистика'
+                        font_size: adaptive_font(18)
+                        bold: True
+                        color: root.dark_text
+                        size_hint_y: None
+                        height: adaptive_dp(25)
+
+                    GridLayout:
+                        id: stats_container
+                        cols: 2
+                        spacing: adaptive_dp(10)
+                        size_hint_y: None
+                        height: self.minimum_height
+
+                # Діаграми
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: adaptive_dp(10)
+
+                    Label:
+                        text: 'Аналітика за період'
+                        font_size: adaptive_font(18)
+                        bold: True
+                        color: root.dark_text
+                        size_hint_y: None
+                        height: adaptive_dp(25)
+
+                    BoxLayout:
+                        id: charts_container
+                        orientation: 'vertical'
+                        spacing: adaptive_dp(10)
+                        size_hint_y: None
+                        height: self.minimum_height
+
+
+<SavingsTab>:
+    name: 'savings_tab'
+    selected_plan_id: 0
+    
+    canvas.before:
+        Color:
+            rgba: LIGHT_BLUE
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: adaptive_padding(20)
+        spacing: adaptive_dp(20)
+        
+        # Секція створення плану
+        GradientBox:
+            color1: LIGHT_PINK
+            orientation: 'vertical'
+            padding: adaptive_padding(15)
+            spacing: adaptive_dp(15)
+            
+            Label:
+                text: 'Створити Новий План Заощаджень'
+                font_size: adaptive_font(18)
+                color: PRIMARY_PINK
+                size_hint_y: None
+                height: adaptive_dp(30)
+                bold: True
+
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: adaptive_dp(10)
+                size_hint_y: None
+                height: adaptive_dp(55) if not is_small_screen else adaptive_dp(45)
+                
+                StyledTextInput:
+                    id: plan_name_input
+                    hint_text: 'Назва плану...'
+                    size_hint_x: 0.35
+                
+                StyledTextInput:
+                    id: target_amount_input
+                    hint_text: 'Цільова сума ($)'
+                    input_filter: 'float'
+                    size_hint_x: 0.3
+                
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: adaptive_dp(5)
+                    size_hint_x: 0.35
+                    
+                    StyledTextInput:
+                        id: deadline_input
+                        hint_text: 'Дедлайн'
+                        size_hint_x: 0.7
+                    
+                    StyledButton:
+                        size_hint_x: 0.3
+                        background_color: PRIMARY_BLUE
+                        on_press: root.show_calendar()
+                        padding: adaptive_padding(5)
+                        BoxLayout: # Контейнер для іконки
+                            size: self.parent.size
+                            pos: self.parent.pos
+                            Image:
+                                source: "assets/icons/calendar.png"
+                                size_hint: None, None
+                                size: adaptive_dp(22), adaptive_dp(22)
+                                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            
+            StyledButton:
+                text: "Створити План"
+                background_color: PRIMARY_PINK
+                color: WHITE
+                size_hint_y: None
+                height: adaptive_dp(50)
+                on_press: root.create_savings_plan()
+
+
+            Label:
+                id: savings_message
+                text: 'Введіть дані та створіть план'
+                size_hint_y: None
+                height: adaptive_dp(30)
+                color: PRIMARY_PINK
+                text_size: self.width, None
+                halign: 'center'
+                valign: 'middle'
+                font_size: adaptive_font(14)
+
+        
+        Label:
+            text: 'Ваші Цілі та Прогрес'
+            font_size: adaptive_font(18)
+            color: PRIMARY_PINK
+            size_hint_y: None
+            height: adaptive_dp(35)
+            bold: True
+
+        ScrollView:
+            size_hint_y: 1
+            bar_width: adaptive_dp(8)
+            bar_color: PRIMARY_BLUE
+            bar_inactive_color: DARK_GRAY
+            
+            GridLayout:
+                id: savings_container
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: adaptive_dp(12)
+                padding: adaptive_padding(5)
+
+        
+
+<AccountTab>:
+    name: 'account_tab'
+    canvas.before:
+        Color:
+            rgba: LIGHT_BLUE
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: adaptive_padding(20)
+        spacing: adaptive_dp(15)
+        size_hint_y: 1 
+        
+        Label:
+            text: 'Мій акаунт'
+            font_size: adaptive_font(24)
+            bold: True
+            size_hint_y: None
+            height: adaptive_dp(50)
+            color: PRIMARY_PINK
+        
+        ScrollView:
+            id: account_scroll_view
+            size_hint_y: 1
+            canvas.before:
+                Color:
+                    rgba: WHITE
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            BoxLayout:
+                id: scroll_content
+                orientation: 'vertical'
+                spacing: adaptive_dp(15)
+                size_hint_y: None
+                height: self.minimum_height
+                
+                # Профіль з фото 
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: adaptive_dp(100)
+                    spacing: adaptive_dp(15)
+                    padding: adaptive_padding(10)
+                    canvas.before:
+                        Color:
+                            rgba: WHITE
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [adaptive_dp(15),]
+                    
+                    Image:
+                        id: profile_image
+                        source: 'assets/icons/default_avatar.png'
+                        size_hint: None, None
+                        size: adaptive_dp(80), adaptive_dp(80)
+                        allow_stretch: True
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: adaptive_dp(5)
+                        Label:
+                            id: username_label
+                            text: 'Завантаження...'
+                            font_size: adaptive_font(18)
+                            bold: True
+                            size_hint_y: None
+                            height: adaptive_dp(25)
+                            text_size: self.width, None
+                            color: DARK_TEXT
+                        Label:
+                            id: email_label
+                            text: 'Завантаження...'
+                            font_size: adaptive_font(14)
+                            size_hint_y: None
+                            height: adaptive_dp(20)
+                            text_size: self.width, None
+                            color: DARK_TEXT
+                        Label:
+                            id: status_label
+                            text: 'Завантаження...'
+                            font_size: adaptive_font(12)
+                            size_hint_y: None
+                            height: adaptive_dp(18)
+                            color: PRIMARY_BLUE
+                            text_size: self.width, None
+                
+                # Баланс 
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: adaptive_dp(120)
+                    padding: adaptive_padding(15)
+                    spacing: adaptive_dp(5)
+                    canvas.before:
+                        Color:
+                            rgba: LIGHT_PINK
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [adaptive_dp(15),]
+                    
+                    Label:
+                        text: 'Загальний баланс'
+                        font_size: adaptive_font(16)
+                        color: DARK_TEXT
+                        size_hint_y: None
+                        height: adaptive_dp(25)
+                    
+                    Label:
+                        id: balance_label
+                        text: '$0.00'
+                        font_size: adaptive_font(24)
+                        bold: True
+                        color: PRIMARY_PINK
+                        size_hint_y: None
+                        height: adaptive_dp(35)
+                    
+                    Label:
+                        id: registration_label
+                        text: 'Завантаження...'
+                        font_size: adaptive_font(12)
+                        size_hint_y: None
+                        height: adaptive_dp(20)
+                        color: DARK_TEXT
+                    
+                    Label:
+                        id: last_login_label
+                        text: 'Завантаження...'
+                        font_size: adaptive_font(12)
+                        size_hint_y: None
+                        height: adaptive_dp(20)
+                        color: DARK_TEXT
+                
+                
+                # КНОПКИ ДІЙ (1)
+                GridLayout:
+                    cols: 2
+                    spacing: adaptive_dp(10)
+                    size_hint_y: None
+                    height: adaptive_dp(100) 
+                    
+                    Button:
+                        text: 'Змінити фото'
+                        background_color: PRIMARY_BLUE
+                        background_normal: ''
+                        font_size: adaptive_font(14)
+                        bold: True
+                        size_hint_y: None
+                        height: adaptive_dp(45)
+                        on_press: root.change_profile_photo()
+                    
+                    Button:
+                        text: 'Редагувати профіль'
+                        background_color: PRIMARY_PINK
+                        background_normal: ''
+                        font_size: adaptive_font(14)
+                        bold: True
+                        size_hint_y: None
+                        height: adaptive_dp(45)
+                        on_press: root.edit_profile()
+                    
+                    Button:
+                        text: 'Історія входів'
+                        background_color: DARK_GRAY
+                        background_normal: ''
+                        font_size: adaptive_font(14)
+                        bold: True
+                        size_hint_y: None
+                        height: adaptive_dp(45)
+                        on_press: root.show_login_history()
+                    
+                    Button:
+                        text: 'Рівень та XP'
+                        background_color: [0.8, 0.6, 0.2, 1]
+                        background_normal: ''
+                        font_size: adaptive_font(14)
+                        bold: True
+                        size_hint_y: None
+                        height: adaptive_dp(45)
+                        on_press: root.show_level_info()
+                
+                
+                # КНОПКИ ДІЙ (2)
+                GridLayout:
+                    cols: 2
+                    spacing: adaptive_dp(10)
+                    size_hint_y: None
+                    height: adaptive_dp(100) 
+                    
+                    Button:
+                        text: 'Експорт даних (PDF)'
+                        background_color: SUCCESS_GREEN
+                        background_normal: ''
+                        font_size: adaptive_font(14)
+                        bold: True
+                        size_hint_y: None
+                        height: adaptive_dp(45)
+                        on_press: root.download_user_data()
+                    
+                    Button:
+                        id: refresh_button
+                        text: 'Оновити'
+                        background_color: PRIMARY_BLUE
+                        background_normal: ''
+                        font_size: adaptive_font(14)
+                        bold: True
+                        size_hint_y: None
+                        height: adaptive_dp(45)
+                        on_press: root.refresh_account()
+                    
+                    Button:
+                        text: 'Видалити акаунт'
+                        background_color: ERROR_RED
+                        background_normal: ''
+                        font_size: adaptive_font(14)
+                        bold: True
+                        size_hint_y: None
+                        height: adaptive_dp(45)
+                        on_press: root.delete_account()
+                    
+                    Widget: 
+                        size_hint_y: None
+                        height: adaptive_dp(45) 
+                        size_hint_x: 1 
+
+        # Кнопка "Вийти з акаунта" (поза ScrollView)
+        Button:
+            text: 'Вийти з акаунта'
+            background_color: ERROR_RED
+            background_normal: ''
+            color: WHITE
+            font_size: adaptive_font(16)
+            bold: True
+            size_hint_y: None
+            height: adaptive_dp(50)
+            on_press: root.logout()
+
+
+# --- BOTTOM MENU ITEM ---
+
+<BottomMenuItem>:
+    orientation: 'vertical'
+    size_hint_x: 1
+    spacing: adaptive_dp(5)
+    padding: [adaptive_padding(5), adaptive_padding(5), adaptive_padding(5), adaptive_padding(10)]
+    
+    RelativeLayout: 
+        size_hint_y: 1
+        
+        Image:
+            source: root.icon_source
+            size_hint: None, None
+            size: adaptive_dp(35), adaptive_dp(35) if not is_small_screen else (adaptive_dp(28), adaptive_dp(28))
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            canvas.before:
+                Color:
+                    rgba: WHITE
+                
+<DashboardScreen>:
+    name: "dashboard_screen"
+    canvas.before:
+        Color:
+            rgba: LIGHT_BLUE
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    
+    BoxLayout:
+        orientation: "vertical"
+        size_hint: 1, 1
+        
+        ScreenManager:
+            id: tab_manager
+            size_hint_y: 1
+            canvas.before:
+                Color:
+                    rgba: LIGHT_BLUE
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            HomeTab:
+                name: "home_tab"
+                id: home_tab
+                
+            AnalyticsTab:
+                name: "analytics_tab"
+                
+            SavingsTab:
+                name: "savings_tab"
+                
+            AccountTab:
+                name: "account_tab"
+
+        BoxLayout:
+            id: bottom_nav_bar
+            size_hint_y: None
+            height: adaptive_dp(70) if not is_small_screen else adaptive_dp(60)
+            padding: adaptive_padding(10)
+            spacing: adaptive_dp(10)
+            canvas.before:
+                Color:
+                    rgba: PRIMARY_BLUE
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [adaptive_dp(25), adaptive_dp(25), 0, 0]
+
+            BottomMenuItem:
+                tab_name: "home_tab"
+                icon_source: "assets/icons/home.png"
+
+            BottomMenuItem:
+                tab_name: "analytics_tab"
+                icon_source: "assets/icons/analytics.png"
+
+            BottomMenuItem:
+                tab_name: "savings_tab"
+                icon_source: "assets/icons/savings.png"
+
+            BottomMenuItem:
+                tab_name: "account_tab"
+                icon_source: "assets/icons/account.png"
